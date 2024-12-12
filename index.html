@@ -47,6 +47,8 @@
     <div id="navigationButtons">
         <button id="downButton" onclick="changeScale(-1)">Down</button>
         <button id="upButton" onclick="changeScale(1)">Up</button>
+        <!-- Stop button -->
+        <button id="stopButton" onclick="stopAll()">Stop</button> <!-- Added Stop Button -->
     </div>
 
     <!-- Audio elements -->
@@ -87,6 +89,7 @@
             sa1Audio.currentTime = 0;
             sa2Audio.currentTime = 0;
             currentScale = null; // Reset current scale
+            updateScaleDisplay(); // Update display after stopping
         }
 
         function startLoop(scale) {
@@ -118,7 +121,7 @@
             setTimeout(() => {
                 sa1Audio.currentTime = 0; // Reset to start
                 sa1Audio.play();
-            }, 2700); // Play first Sa after 1.2 seconds from Pa start
+            }, 2700); // Play first Sa after Pa starts
 
             setTimeout(() => {
                 sa2Audio.currentTime = 0; // Reset to start
