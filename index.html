@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tanpura Audio Player</title>
+    <style>
+        button {
+            margin: 5px;
+            padding: 10px;
+            font-size: 16px;
+        }
+        #scaleDisplay {
+            font-size: 24px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Tanpura Audio Player</h1>
+
+    <!-- Scale buttons -->
+    <div id="scaleButtons">
+        <button onclick="startLoop('A_2')">A 2</button>
+        <button onclick="startLoop('Asharp_2')">A# 2</button>
+        <button onclick="startLoop('B_2')">B 2</button>
+        <button onclick="startLoop('C_3')">C 3</button>
+        <button onclick="startLoop('Csharp_3')">C# 3</button>
+        <button onclick="startLoop('D_3')">D 3</button>
+        <button onclick="startLoop('Dsharp_3')">D# 3</button>
+        <button onclick="startLoop('E_3')">E 3</button>
+        <button onclick="startLoop('F_3')">F 3</button>
+        <button onclick="startLoop('Fsharp_3')">F# 3</button>
+        <button onclick="startLoop('G_2')">G 2</button>
+        <button onclick="startLoop('Gsharp_2')">G# 2</button>
+        <button onclick="startLoop('G_3')">G 3</button>
+        <button onclick="startLoop('Gsharp_3')">G# 3</button>
+        <button onclick="startLoop('A_3')">A 3</button>
+        <button onclick="startLoop('Asharp_3')">A# 3</button>
+    </div>
+
+    <!-- Display current scale -->
+    <div id="scaleDisplay">Current Scale: C# 3</div>
+
+    <!-- Navigation buttons -->
+    <div id="navigationButtons">
+        <button id="downButton" onclick="changeScale(-1)">Down</button>
+        <button id="upButton" onclick="changeScale(1)">Up</button>
+    </div>
+
+    <!-- Audio elements -->
+    <audio id="kharajAudio"></audio>
+    <audio id="paAudio"></audio>
+    <audio id="sa1Audio"></audio>
+    <audio id="sa2Audio"></audio>
+
+    <script>
+        const kharajAudio = document.getElementById('kharajAudio');
+        const paAudio = document.getElementById('paAudio');
+        const sa1Audio = document.getElementById('sa1Audio');
+        const sa2Audio = document.getElementById('sa2Audio');
+
+        let currentScale = 'Csharp_3'; // Default scale
+        const scales = [
+            'A_2', 'Asharp_2', 'B_2', 'C_3', 'Csharp_3', 
+            'D_3', 'Dsharp_3', 'E_3', 'F_3', 'Fsharp_3', 
+            'G_2', 'Gsharp_2', 'G_3', 'Gsharp_3', 'A_3', 
+            'Asharp_3'
+        ];
+        
+        let currentScaleIndex = scales.indexOf(currentScale);
+
+        function updateScaleDisplay() {
+            document.getElementById('scaleDisplay').innerText = `Current Scale: ${scales[currentScaleIndex].replace(/_/g, ' ')}`;
+            document.getElementById('downButton').disabled = currentScaleIndex === scales.length - 1; // Disable if at lowest scale
+            document.getElementById('upButton').disabled = currentScaleIndex === 0; // Disable if at highest scale
+        }
+
+        function stopAll() {
+            kharajAudio.pause();
+            paAudio.pause();
+            sa1Audio.pause();
+            sa2Audio.pause();
+            kharajAudio.currentTime = 0;
+            paAudio.currentTime = 0;
+            sa1Audio.currentTime = 0;
+            sa2Audio.currentTime = 0;
+            currentScale = null; // Reset current scale
+        }
+
+        function startLoop(scale) {
+            // Stop currently playing audio if any
+            if (currentScale !== null) {
+                stopAll();
+            }
+
+            // Set the audio sources based on the selected scale
+            kharajAudio.src = `./tanpura_audios/Tanpura_${scale}_Kharaj.wav`;
+            paAudio.src = `./tanpura_audios/Tanpura_${scale}_Pa.wav`;
+            sa1Audio.src = `./tanpura_audios/Tanpura_${scale}_Sa1.wav`;
+            sa2Audio.src = `./tanpura_audios/Tanpura_${scale}_Sa2.wav`;
+
+            // Update the display immediately after setting sources
+            currentScale = scale; // Set current scale to prevent overlapping loops
+            updateScaleDisplay(); // Update display for the new scale
+
+            // Play Kharaj
+            kharajAudio.currentTime = 0; // Reset to start
+            kharajAudio.play();
+
+            // Set timeouts for the next audio starts
+            setTimeout(() => {
+                paAudio.currentTime = 0; // Reset to start
+                paAudio.play();
+            }, 1500); // Play Pa after 1.5 seconds from Kharaj start
+
+            setTimeout(() => {
+                sa1Audio.currentTime = 0; // Reset to start
+                sa1Audio.play();
+            }, 2700); // Play first Sa after 1.2 seconds from Pa start
+
+            setTimeout(() => {
+                sa2Audio.currentTime = 0; // Reset to start
+                sa2Audio.play();
+            }, 3700); // Play second Sa with overlap
+
+            setTimeout(() => {
+                playLoop(scale); // Loop back to Kharaj after specified time
+            }, 4700); // Loop back after a delay
+        }
+
+        function playLoop(scale) {
+            if (currentScale === scale) { // Check if the same scale is still active
+                kharajAudio.currentTime = 0; // Reset to start
+                kharajAudio.play();
+
+                setTimeout(() => {
+                    paAudio.currentTime = 0; // Reset to start
+                    paAudio.play();
+                }, 1500); // Play Pa after Kharaj
+
+                setTimeout(() => {
+                    sa1Audio.currentTime = 0; // Reset to start
+                    sa1Audio.play();
+                }, 2700); // Play first Sa
+
+                setTimeout(() => {
+                    sa2Audio.currentTime = 0; // Reset to start
+                    sa2Audio.play();
+                }, 3700); // Play second Sa
+
+                setTimeout(() => {
+                    playLoop(scale); // Continue looping for the same scale
+                }, 4700); // Loop back after a delay
+            }
+        }
+
+        function changeScale(direction) {
+            stopAll(); // Stop any currently playing audio
+
+            currentScaleIndex += direction; // Change index based on direction
+
+            if (currentScaleIndex >= scales.length) {
+                currentScaleIndex = scales.length - 1; // Stay at highest index if going up too far
+            } else if (currentScaleIndex < 0) {
+                currentScaleIndex = 0; // Stay at lowest index if going down too far
+            }
+
+            const newScale = scales[currentScaleIndex];
+            startLoop(newScale); // Start loop for the new scale
+        }
+
+        updateScaleDisplay(); // Initial display update on page load
+
+    </script>
+
+</body>
+</html>
